@@ -16,6 +16,8 @@ from peewee import *
 from playhouse.flask_utils import FlaskDB, get_object_or_404, object_list
 from playhouse.sqlite_ext import *
 
+### Configure flask app ###
+
 ## TODO at least one-way hash to store the password
 ADMIN_PASSWORD = 'secret'
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -32,6 +34,8 @@ flask_db = FlaskDB(app)
 database = flask_db.database
 
 oembed_providers = bootstrap_basic(OEmbedCache())
+
+### Database models ###
 
 class Entry(flask_db.Model):
     title = CharField()
@@ -67,3 +71,24 @@ class FTSEntry(FTSModel):
 
     class Meta:
         database = database
+
+### Initialization ###
+
+@app.template_filter('clean_querystring')
+def clean_querystring(request_args, *keys_to_remove, **new_values):
+    querystring = dict((key, value) for key, value in request_args.items())
+    for key in keys_to_remove:
+        querystring.pop(key, None)
+    querystring.update(new_values)
+    return urllib.urlencode(querystring)
+
+@app.errorhandler(404)
+def not_found(exc):
+    return Response('<h3>Not found</h3>'), 404
+
+def main():
+    database.create_tables([Entry, FTSEntry], safe=True)
+    app.run(debug=True)
+
+if __name__ == '__main__':
+    main()
