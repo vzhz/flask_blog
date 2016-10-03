@@ -103,6 +103,17 @@ def logout():
         return redirect(url_for('login'))
     return render_template('logout.html')
 
+### Index view ###
+
+@app.route('/')
+def index():
+    search_query = request.args.get('q')
+    if search_query:
+        query = Entry.search(search_query)
+    else:
+        query = Entry.public().order_by(Entry.timestamp.desc())
+    return object_list('index.html', query, search=search_query)
+
 ### Initialization ###
 
 @app.template_filter('clean_querystring')
