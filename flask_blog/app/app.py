@@ -88,6 +88,10 @@ class Entry(flask_db.Model):
         fts_entry.content = '\n'.join((self.title, self.content))
         fts_entry.save(force_insert=force_insert)
 
+    @classmethod
+    def drafts(cls):
+        return Entry.select().where(Entry.published == False)
+
 
 class FTSEntry(FTSModel):
     entry_id = IntegerField()
