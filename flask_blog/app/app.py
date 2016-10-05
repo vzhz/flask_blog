@@ -92,6 +92,19 @@ class Entry(flask_db.Model):
     def drafts(cls):
         return Entry.select().where(Entry.published == False)
 
+### Markdown into HTML, links into enbedded objects ###
+
+    @property
+    def html_content(self):
+        hilite = CodeHiliteExtension(linenums=False, css_class='highlight')
+        extras = ExtraExtension()
+        markdown_content = markdown(self.content, extensions=[hilite, extras])
+        oembed_content = parse_html(
+            markdown_content,
+            oembed_providers,
+            urlize_all=True,
+            maxwidth=app.config['SITE_WIDTH'])
+        return Markup(oembed_content)
 
 class FTSEntry(FTSModel):
     entry_id = IntegerField()
