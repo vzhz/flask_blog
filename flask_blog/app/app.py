@@ -150,6 +150,17 @@ def drafts():
     query = Entry.drafts().order_by(Entry.timestamp.desc())
     return object_list('index.html', query)
 
+### Slug (URL-friendly title) detail ###
+
+@app.route('/<slug>/')
+def detail(slug):
+    if session.get('logged_in'):
+        query = Entry.select()
+    else:
+        query = Entry.public()
+    entry = get_object_or_404(query, Entry.slug == slug)
+    return render_template('detail.html', entry=entry)
+
 ### Initialization ###
 
 @app.template_filter('clean_querystring')
